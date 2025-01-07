@@ -24,8 +24,8 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        role-to-assume: arn:aws:iam::552569571243:role/please-work
-        aws-region: us-east-1
+        role-to-assume: arn:aws:iam::242201291893:role/github_ecr_role
+        aws-region: us-west-2
 
 
     - name: Login to Amazon ECR Private
@@ -38,7 +38,7 @@ jobs:
       id: build-image
       env:
         REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        REPOSITORY: ${{ secrets.REPO_NAME }}
+        REPOSITORY: ga_ecr
         IMAGE_TAG: ${{ github.sha }}
       run: |
         docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
@@ -46,26 +46,7 @@ jobs:
         echo "image=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
         
 
-    
-    - name: Fill in the new image ID in the Amazon ECS task definition
-      id: task-def
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-        task-definition: ./task-definition.json
-        container-name: next
-        image: ${{ steps.build-image.outputs.image }}
-
-
-
-
-
-    - name: Deploy Amazon ECS task definition
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      with:
-        task-definition: ${{ steps.task-def.outputs.task-definition }}
-        service: github-ecr-service
-        cluster: myCluster
-        wait-for-service-stability: true
+  
 
 
  
